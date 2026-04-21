@@ -1,0 +1,132 @@
+<div *ngIf="loading" class="text-center py-5 text-muted"><span class="spinner-border"></span></div>
+<div *ngIf="!loading && member">
+<div class="d-flex align-items-center gap-3 mb-4">
+  <button class="btn btn-sm btn-outline-secondary" (click)="history.back()">
+    <i class="bi bi-arrow-left me-1"></i>Back
+  </button>
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-person-fill text-primary me-2"></i>Member Detail
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a routerLink="/members" class="text-decoration-none">Members</a></li>
+        <li class="breadcrumb-item active">{{ member.name }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Profile Card -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body text-center p-4">
+        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex align-items-center justify-content-center fw-bold mb-3"
+             style="width: 72px; height: 72px; font-size: 28px;">
+          {{ member.name.charAt(0).toUpperCase() }}
+        </div>
+        <h6 class="fw-bold mb-1">{{ member.name }}</h6>
+        <p class="text-muted small mb-3">{{ member.email }}</p>
+
+        <div class="d-flex justify-content-center gap-2 mb-3">
+          <span class="badge bg-primary">{{ member.tierName || '-' }}</span>
+          <span *ngIf="member.activated === 1" class="badge bg-success">Active</span>
+          <span *ngIf="member.activated !== 1" class="badge bg-warning text-dark">Pending</span>
+        </div>
+
+        <hr>
+        <div class="text-start">
+          <div class="d-flex justify-content-between mb-2">
+            <small class="text-muted"><i class="bi bi-phone me-1"></i>Phone</small>
+            <small class="fw-medium">{{ member.phone }}</small>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <small class="text-muted"><i class="bi bi-hash me-1"></i>Member ID</small>
+            <small class="fw-medium">#{{ member.id }}</small>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <small class="text-muted"><i class="bi bi-calendar me-1"></i>Joined</small>
+            <small class="fw-medium">{{ member.inputDate }}</small>
+          </div>
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="bi bi-pencil me-1"></i>Updated</small>
+            <small class="fw-medium">{{ member.updateDate }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Point Balance + History -->
+  <div class="col-md-8">
+
+    <!-- Point Summary -->
+    <div class="row g-3 mb-3">
+      <div class="col-4">
+        <div class="card border-0 shadow-sm text-center py-3">
+          <div class="text-success fw-bold fs-5">{{ balance.totalPointIn | number }}</div>
+          <div class="text-muted small">Points In</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="card border-0 shadow-sm text-center py-3">
+          <div class="text-danger fw-bold fs-5">{{ balance.totalPointOut | number }}</div>
+          <div class="text-muted small">Points Out</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="card border-0 shadow-sm text-center py-3">
+          <div class="text-primary fw-bold fs-5">{{ balance.balance | number }}</div>
+          <div class="text-muted small">Balance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom fw-medium">
+        <i class="bi bi-clock-history me-2 text-muted"></i>Point History
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+              <tr>
+                <th class="px-3 text-muted fw-medium">ID</th>
+                <th class="text-muted fw-medium">BILL</th>
+                <th class="text-muted fw-medium">MERCHANT</th>
+                <th class="text-muted fw-medium">AMOUNT</th>
+                <th class="text-muted fw-medium">POINT</th>
+                <th class="text-muted fw-medium">DATE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let h of pointHistory">
+                <td class="px-3 text-muted">#{{ h.id }}</td>
+                <td>
+                  <div class="fw-medium">{{ h.bill }}</div>
+                  <div class="text-muted" style="font-size: 11px;">{{ h.note }}</div>
+                </td>
+                <td>{{ h.merchantName }}</td>
+                <td>{{ h.totalAmount | number }}</td>
+                <td>
+                  <span *ngIf="h.pointIn > 0" class="text-success fw-medium">
+                    <i class="bi bi-arrow-up-circle-fill me-1"></i>+{{ h.pointIn | number }}
+                  </span>
+                  <span *ngIf="h.pointOut > 0" class="text-danger fw-medium">
+                    <i class="bi bi-arrow-down-circle-fill me-1"></i>-{{ h.pointOut | number }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ h.transactionDate }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>

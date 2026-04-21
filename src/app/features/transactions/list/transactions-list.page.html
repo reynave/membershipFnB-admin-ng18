@@ -1,0 +1,115 @@
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-journal-text text-primary me-2"></i>Transaction Ledger
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item text-muted">Admin</li>
+        <li class="breadcrumb-item active">Transactions</li>
+      </ol>
+    </nav>
+  </div>
+  <span class="badge bg-light text-dark border fs-6">Total: {{ total }}</span>
+</div>
+
+<!-- Filter Bar -->
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body py-2">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" placeholder="Search bill, member name...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select form-select-sm" [(ngModel)]="filterType" (change)="onFilterChange()">
+          <option value="">All Types</option>
+          <option value="point_in">Point In</option>
+          <option value="redeem">Redeem (Point Out)</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <input type="date" class="form-control form-control-sm">
+      </div>
+      <div class="col-md-2">
+        <input type="date" class="form-control form-control-sm">
+      </div>
+      <div class="col-md-1 text-end">
+        <button class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Table -->
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="px-3 text-muted fw-medium" style="font-size: 12px;">ID</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">TYPE</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">BILL / TXN NO.</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">MEMBER</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">MERCHANT</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">TXN AMOUNT</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">POINT IN</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">POINT OUT</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;">DATE</th>
+            <th class="text-muted fw-medium" style="font-size: 12px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of transactions">
+            <td class="px-3 text-muted small">#{{ t.id }}</td>
+            <td>
+              <span *ngIf="t.pointIn > 0" class="badge bg-success-subtle text-success border border-success-subtle small">
+                <i class="bi bi-arrow-up-circle-fill me-1"></i>Point In
+              </span>
+              <span *ngIf="t.pointOut > 0" class="badge bg-danger-subtle text-danger border border-danger-subtle small">
+                <i class="bi bi-arrow-down-circle-fill me-1"></i>Redeem
+              </span>
+            </td>
+            <td>
+              <span class="font-monospace small fw-medium">{{ t.bill }}</span>
+            </td>
+            <td class="small">{{ t.memberName }}</td>
+            <td class="small text-muted">{{ t.merchantName }}</td>
+            <td class="fw-medium">{{ t.totalAmount | number }}</td>
+            <td>
+              <span *ngIf="t.pointIn > 0" class="text-success fw-medium small">
+                +{{ t.pointIn | number }}
+              </span>
+              <span *ngIf="!(t.pointIn > 0)" class="text-muted small">-</span>
+            </td>
+            <td>
+              <span *ngIf="t.pointOut > 0" class="text-danger fw-medium small">
+                -{{ t.pointOut | number }}
+              </span>
+              <span *ngIf="!(t.pointOut > 0)" class="text-muted small">-</span>
+            </td>
+            <td class="text-muted small">{{ t.transactionDate }}</td>
+            <td>
+              <a [routerLink]="['/transactions', t.id]" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-eye me-1"></i>Detail
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-2 px-3">
+    <small class="text-muted">Showing {{ transactions.length }} of {{ total }} transactions</small>
+    <ngb-pagination [collectionSize]="total" [(page)]="page" [pageSize]="pageSize"
+            [maxSize]="5" [rotate]="true" [boundaryLinks]="true" size="sm"
+            (pageChange)="onPageChange()">
+    </ngb-pagination>
+  </div>
+</div>

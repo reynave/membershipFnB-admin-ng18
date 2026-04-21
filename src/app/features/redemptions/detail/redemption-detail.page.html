@@ -1,0 +1,108 @@
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<!-- Back + Header -->
+<div *ngIf="!loading && redemption" class="d-flex align-items-center gap-3 mb-4">
+  <button class="btn btn-sm btn-outline-secondary" (click)="history.back()">
+    <i class="bi bi-arrow-left me-1"></i>Back
+  </button>
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-gift-fill text-primary me-2"></i>Redemption Detail
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a routerLink="/redemptions" class="text-decoration-none">Redemptions</a></li>
+        <li class="breadcrumb-item active">{{ redemption.redeemCode || redemption.id }}</li>
+      </ol>
+    </nav>
+  </div>
+  <div class="ms-auto">
+    <span class="badge bg-success fs-6 px-3 py-2">
+      <i class="bi bi-check-circle-fill me-1"></i>Success
+    </span>
+  </div>
+</div>
+<div *ngIf="!loading && !redemption" class="text-center py-5 text-muted">Data not found.</div>
+
+<div class="row g-3">
+
+  <!-- Redeem Info -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-medium border-bottom">
+        <i class="bi bi-qr-code me-2 text-muted"></i>Redeem Code Info
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Transaction ID</dt>
+          <dd class="col-7">#{{ redemption.id }}</dd>
+
+          <dt class="col-5 text-muted">Redeem Code</dt>
+          <dd class="col-7">
+            <span class="font-monospace fw-bold text-dark">{{ redemption.redeemCode }}</span>
+          </dd>
+
+          <dt class="col-5 text-muted">Approval Code</dt>
+          <dd class="col-7">
+            <span class="font-monospace text-success small" style="word-break: break-all;">
+              {{ redemption.approvalCode }}
+            </span>
+          </dd>
+
+          <dt class="col-5 text-muted">Redeem Amount</dt>
+          <dd class="col-7 fw-bold text-danger fs-5">{{ redemption.amount | number }} points</dd>
+
+          <dt class="col-5 text-muted">Redemption Date</dt>
+          <dd class="col-7">{{ redemption.billDate }}</dd>
+
+          <dt class="col-5 text-muted">Input Date</dt>
+          <dd class="col-7">{{ redemption.inputDate }}</dd>
+
+          <dt class="col-5 text-muted">Source</dt>
+          <dd class="col-7"><span class="badge bg-light text-dark border">{{ redemption.syncType }}</span></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member + Merchant Info -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white fw-medium border-bottom">
+        <i class="bi bi-person-fill me-2 text-muted"></i>Member Info
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Member ID</dt>
+          <dd class="col-7">#{{ redemption.memberId }}</dd>
+          <dt class="col-5 text-muted">Nama</dt>
+          <dd class="col-7 fw-medium">{{ redemption.memberName }}</dd>
+          <dt class="col-5 text-muted">Email</dt>
+          <dd class="col-7">{{ redemption.memberEmail }}</dd>
+          <dt class="col-5 text-muted">Phone</dt>
+          <dd class="col-7">{{ redemption.memberPhone }}</dd>
+        </dl>
+        <div class="mt-2">
+          <a [routerLink]="['/members', redemption.memberId]" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-person me-1"></i>View Member Profile
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-medium border-bottom">
+        <i class="bi bi-shop me-2 text-muted"></i>Merchant Info
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Merchant ID</dt>
+          <dd class="col-7">#{{ redemption.merchantId }}</dd>
+          <dt class="col-5 text-muted">Nama</dt>
+          <dd class="col-7 fw-medium">{{ redemption.merchantName }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+</div>

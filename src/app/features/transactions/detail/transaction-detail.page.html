@@ -1,0 +1,116 @@
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<!-- Back + Header -->
+<div *ngIf="!loading && transaction" class="d-flex align-items-center gap-3 mb-4">
+  <button class="btn btn-sm btn-outline-secondary" (click)="history.back()">
+    <i class="bi bi-arrow-left me-1"></i>Back
+  </button>
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-journal-text text-primary me-2"></i>Transaction Detail
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a routerLink="/transactions" class="text-decoration-none">Transactions</a></li>
+        <li class="breadcrumb-item active">{{ transaction.bill || transaction.id }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Transaksi Info -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-medium border-bottom">
+        <i class="bi bi-receipt me-2 text-muted"></i>Bill Information
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Transaction ID</dt>
+          <dd class="col-7">#{{ transaction.id }}</dd>
+
+          <dt class="col-5 text-muted">Bill No.</dt>
+          <dd class="col-7">
+            <span class="font-monospace fw-bold">{{ transaction.bill }}</span>
+          </dd>
+
+          <dt class="col-5 text-muted">Transaction Amount</dt>
+          <dd class="col-7 fw-bold fs-5 text-dark">Rp {{ transaction.totalAmount | number }}</dd>
+
+          <dt class="col-5 text-muted">Bill Date</dt>
+          <dd class="col-7">{{ transaction.billDate }}</dd>
+
+          <dt class="col-5 text-muted">Input Date</dt>
+          <dd class="col-7">{{ transaction.inputDate }}</dd>
+
+          <dt class="col-5 text-muted">Source</dt>
+          <dd class="col-7"><span class="badge bg-light text-dark border">{{ transaction.syncType }}</span></dd>
+
+          <dt class="col-5 text-muted">Notes</dt>
+          <dd class="col-7 text-muted">{{ transaction.note || '-' }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Point Entry -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-header bg-white fw-medium border-bottom">
+        <i class="bi bi-coin me-2 text-muted"></i>Point Entry
+      </div>
+      <div class="card-body">
+        <div class="row g-2 text-center mb-3">
+          <div class="col-6">
+            <div class="bg-success bg-opacity-10 rounded-3 py-3">
+              <div class="text-success fw-bold fs-4">+{{ transaction.pointIn | number }}</div>
+              <div class="text-muted small">Point In</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="bg-danger bg-opacity-10 rounded-3 py-3">
+              <div class="text-danger fw-bold fs-4">-{{ transaction.pointOut | number }}</div>
+              <div class="text-muted small">Point Out</div>
+            </div>
+          </div>
+        </div>
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Tier</dt>
+          <dd class="col-7"><span class="badge bg-primary">{{ transaction.tierName }}</span></dd>
+          <dt class="col-5 text-muted">Point Date</dt>
+          <dd class="col-7">{{ transaction.transactionDate }}</dd>
+          <dt class="col-5 text-muted">Archived</dt>
+          <dd class="col-7">
+            <span *ngIf="transaction.archived === 0" class="badge bg-success-subtle text-success border border-success-subtle">Tidak</span>
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Member + Merchant -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <div class="text-muted small mb-1"><i class="bi bi-person-fill me-1"></i>Member</div>
+            <div class="fw-medium">{{ transaction.memberName }}</div>
+            <div class="text-muted small">{{ transaction.memberEmail }}</div>
+          </div>
+          <a [routerLink]="['/members', transaction.memberId]" class="btn btn-sm btn-outline-primary">
+            View
+          </a>
+        </div>
+        <hr class="my-2">
+        <div>
+          <div class="text-muted small mb-1"><i class="bi bi-shop me-1"></i>Merchant</div>
+          <div class="fw-medium">{{ transaction.merchantName }}</div>
+          <div class="text-muted small">#{{ transaction.merchantId }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div *ngIf="!loading && !transaction" class="text-center py-5 text-muted">Data not found.</div>

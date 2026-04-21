@@ -1,0 +1,155 @@
+<div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+<!-- Back + Header -->
+<div *ngIf="!loading && user" class="d-flex align-items-center gap-3 mb-4">
+  <button class="btn btn-sm btn-outline-secondary" (click)="history.back()">
+    <i class="bi bi-arrow-left me-1"></i>Back
+  </button>
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-person-badge-fill text-primary me-2"></i>User Detail
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a routerLink="/users" class="text-decoration-none">System Users</a></li>
+        <li class="breadcrumb-item active">{{ user.name }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Profile Card -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center py-4">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-bold mb-3"
+             style="width: 72px; height: 72px; font-size: 28px;">
+          {{ user.name.charAt(0).toUpperCase() }}
+        </div>
+        <h5 class="fw-bold mb-1">{{ user.name }}</h5>
+        <p class="text-muted small mb-2">{{ user.email }}</p>
+        <span class="badge bg-success-subtle text-success border border-success-subtle">
+          <i class="bi bi-check-circle-fill me-1"></i>Active
+        </span>
+      </div>
+      <hr class="my-0">
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">ID</dt>
+          <dd class="col-7">#{{ user.id }}</dd>
+          <dt class="col-5 text-muted">Registered</dt>
+          <dd class="col-7">{{ user.inputDate }}</dd>
+          <dt class="col-5 text-muted">Active Tokens</dt>
+          <dd class="col-7">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ tokens.length }}</span>
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Token Table -->
+  <div class="col-md-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between gap-3">
+        <div class="fw-medium">
+          <i class="bi bi-key-fill me-2 text-muted"></i>Merchant Token (POS Access)
+        </div>
+        <button class="btn btn-sm btn-primary" (click)="toggleCreateForm()">
+          <i class="bi bi-plus-circle me-1"></i>Create Token
+        </button>
+      </div>
+      <div *ngIf="showCreateForm" class="card-body border-bottom bg-light-subtle">
+        <div class="row g-2 align-items-end">
+          <div class="col-md-6">
+            <label class="form-label small text-muted mb-1">Merchant</label>
+            <select class="form-select form-select-sm" [(ngModel)]="selectedMerchantId">
+              <option value="">Select merchant</option>
+              <option *ngFor="let merchant of merchants" [value]="merchant.id">
+                #{{ merchant.id }} - {{ merchant.name }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-6 d-flex gap-2">
+            <button class="btn btn-sm btn-primary" (click)="createToken()" [disabled]="creatingToken || !selectedMerchantId">
+              <span *ngIf="!creatingToken"><i class="bi bi-shield-lock me-1"></i>Generate Opaque Token</span>
+              <span *ngIf="creatingToken" class="spinner-border spinner-border-sm"></span>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="toggleCreateForm()" [disabled]="creatingToken">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="createErrorMsg" class="alert alert-danger py-2 px-3 mt-3 mb-0 small">{{ createErrorMsg }}</div>
+        <div *ngIf="createSuccessMsg" class="alert alert-success py-2 px-3 mt-3 mb-0 small">{{ createSuccessMsg }}</div>
+
+        <div *ngIf="generatedToken" class="mt-3">
+          <div class="small text-muted mb-1">New Token</div>
+          <div class="d-flex gap-2 align-items-start">
+            <code class="small text-dark bg-white border rounded px-2 py-2 flex-grow-1" style="word-break: break-all;">{{ generatedToken }}</code>
+            <button class="btn btn-sm btn-outline-primary" (click)="copyToken(generatedToken)">
+              <i class="bi bi-copy me-1"></i>Copy
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="px-3 text-muted fw-medium" style="font-size: 12px;">ID</th>
+                <th class="text-muted fw-medium" style="font-size: 12px;">USER ID</th>
+                <th class="text-muted fw-medium" style="font-size: 12px;">MERCHANT</th>
+                <th class="text-muted fw-medium" style="font-size: 12px;">TOKEN</th>
+                <th class="text-muted fw-medium" style="font-size: 12px;">CREATED</th>
+                <th class="text-muted fw-medium" style="font-size: 12px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="tokens.length === 0">
+                <td colspan="6" class="text-center text-muted py-4 small">No POS tokens found for this user.</td>
+              </tr>
+              <tr *ngFor="let t of tokens">
+                <td class="px-3 text-muted small">#{{ t.id }}</td>
+                <td class="small text-muted">{{ t.userId || user.id }}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="d-flex align-items-center justify-content-center rounded bg-secondary-subtle text-secondary"
+                         style="width: 32px; height: 32px; font-size: 14px;">
+                      <i class="bi bi-shop"></i>
+                    </div>
+                    <div>
+                      <div class="fw-medium small">{{ t.merchantName }}</div>
+                      <div class="text-muted" style="font-size: 11px;">ID #{{ t.merchantId }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex gap-2 align-items-start">
+                    <code class="small text-muted bg-light px-2 py-1 rounded flex-grow-1" style="word-break: break-all;">{{ t.token }}</code>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="copyToken(t.token)">
+                      <i class="bi bi-copy"></i>
+                    </button>
+                  </div>
+                </td>
+                <td class="small text-muted">{{ t.inputDate }}</td>
+                <td class="text-end pe-3">
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteToken(t)" [disabled]="deletingTokenId === t.id">
+                    <span *ngIf="deletingTokenId !== t.id"><i class="bi bi-trash me-1"></i>Delete</span>
+                    <span *ngIf="deletingTokenId === t.id" class="spinner-border spinner-border-sm"></span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div *ngIf="!loading && !user" class="text-center py-5 text-muted">Data not found.</div>

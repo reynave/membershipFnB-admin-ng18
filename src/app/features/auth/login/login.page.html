@@ -1,0 +1,48 @@
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+  <div class="text-center" style="width: 420px;">
+
+    <!-- Logo / Brand -->
+    <div class="mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white mb-3"
+           style="width: 64px; height: 64px;">
+        <i class="bi bi-shield-lock-fill fs-3"></i>
+      </div>
+      <h4 class="fw-bold mb-1">Admin Login</h4>
+      <p class="text-muted small">Membership Management System</p>
+    </div>
+
+    <!-- Card Form -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4 text-start">
+        <form (ngSubmit)="login()">
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              <i class="bi bi-envelope me-1 text-muted"></i>Email
+            </label>
+            <input type="email" class="form-control" placeholder="admin@admin.com"
+                   [(ngModel)]="form.email" name="email" [disabled]="loading">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-medium">
+              <i class="bi bi-lock me-1 text-muted"></i>Password
+            </label>
+            <input type="password" class="form-control" placeholder="••••••••"
+                   [(ngModel)]="form.password" name="password" [disabled]="loading">
+          </div>
+          <div *ngIf="errorMsg" class="alert alert-danger py-2 small mb-3">
+            <i class="bi bi-exclamation-circle me-1"></i>{{ errorMsg }}
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2" [disabled]="loading">
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!loading" class="bi bi-box-arrow-in-right me-2"></i>
+            {{ loading ? 'Processing...' : 'Sign In' }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <p class="text-muted mt-3" style="font-size: 12px;">
+      &copy; 2026 Membership System. All rights reserved.
+    </p>
+  </div>
+</div>
