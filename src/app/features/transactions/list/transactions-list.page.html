@@ -19,12 +19,14 @@
   <div class="card-body py-2">
     <div class="row g-2 align-items-center">
       <div class="col-md-4">
+        <label class="form-label small text-muted mb-1">Search</label>
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" class="form-control border-start-0" placeholder="Search bill, member name...">
+          <input type="text" class="form-control border-start-0" placeholder="Search bill, member name..." [(ngModel)]="search" (keyup.enter)="onFilterChange()">
         </div>
       </div>
       <div class="col-md-3">
+        <label class="form-label small text-muted mb-1">Type</label>
         <select class="form-select form-select-sm" [(ngModel)]="filterType" (change)="onFilterChange()">
           <option value="">All Types</option>
           <option value="point_in">Point In</option>
@@ -32,13 +34,42 @@
         </select>
       </div>
       <div class="col-md-2">
-        <input type="date" class="form-control form-control-sm">
+        <label class="form-label small text-muted mb-1">Input Date From</label>
+          <div class="input-group input-group-sm">
+            <input
+              class="form-control"
+              placeholder="yyyy-mm-dd"
+              name="transactionInputDateFrom"
+              ngbDatepicker
+              #transactionDateFromDp="ngbDatepicker"
+              [(ngModel)]="inputDateFrom"
+              (ngModelChange)="onInputDateFromChange()"
+            />
+            <button class="btn btn-outline-secondary" type="button" (click)="transactionDateFromDp.toggle()">
+              <i class="bi bi-calendar3"></i>
+            </button>
+          </div>
       </div>
       <div class="col-md-2">
-        <input type="date" class="form-control form-control-sm">
+        <label class="form-label small text-muted mb-1">Input Date To</label>
+          <div class="input-group input-group-sm">
+            <input
+              class="form-control"
+              placeholder="yyyy-mm-dd"
+              name="transactionInputDateTo"
+              ngbDatepicker
+              #transactionDateToDp="ngbDatepicker"
+              [minDate]="inputDateToMinDate"
+              [(ngModel)]="inputDateTo"
+              (ngModelChange)="onInputDateToChange()"
+            />
+            <button class="btn btn-outline-secondary" type="button" (click)="transactionDateToDp.toggle()">
+              <i class="bi bi-calendar3"></i>
+            </button>
+          </div>
       </div>
       <div class="col-md-1 text-end">
-        <button class="btn btn-sm btn-outline-secondary">
+        <button class="btn btn-sm btn-outline-secondary" (click)="onReset()">
           <i class="bi bi-arrow-clockwise"></i>
         </button>
       </div>
@@ -94,7 +125,7 @@
               </span>
               <span *ngIf="!(t.pointOut > 0)" class="text-muted small">-</span>
             </td>
-            <td class="text-muted small">{{ t.transactionDate }}</td>
+            <td class="text-muted small">{{ t.transactionDate | date:'MMM d, y, h:mm a' }}</td>
             <td>
               <a [routerLink]="['/transactions', t.id]" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-eye me-1"></i>Detail

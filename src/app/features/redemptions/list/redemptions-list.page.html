@@ -19,25 +19,42 @@
   <div class="card-body py-2">
     <div class="row g-2 align-items-center">
       <div class="col-md-5">
+        <label class="form-label small text-muted mb-1">Search</label>
         <div class="input-group input-group-sm">
           <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
           <input type="text" class="form-control border-start-0"
                  placeholder="Search redeem code, member name..."
-                 [(ngModel)]="search">
+                 [(ngModel)]="search"
+                 (keyup.enter)="onFilterChange()">
         </div>
       </div>
       <div class="col-md-3">
-        <select class="form-select form-select-sm" [(ngModel)]="filterStatus">
+        <label class="form-label small text-muted mb-1">Status</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filterStatus" (change)="onFilterChange()">
           <option value="">All Status</option>
           <option value="success">Success</option>
           <option value="failed">Failed</option>
         </select>
       </div>
       <div class="col-md-2">
-        <input type="date" class="form-control form-control-sm">
+        <label class="form-label small text-muted mb-1">Input Date</label>
+        <div class="input-group input-group-sm">
+          <input
+            class="form-control"
+            placeholder="yyyy-mm-dd"
+            name="redemptionInputDate"
+            ngbDatepicker
+            #redemptionDateDp="ngbDatepicker"
+            [(ngModel)]="filterInputDate"
+            (ngModelChange)="onFilterChange()"
+          />
+          <button class="btn btn-outline-secondary" type="button" (click)="redemptionDateDp.toggle()">
+            <i class="bi bi-calendar3"></i>
+          </button>
+        </div>
       </div>
       <div class="col-md-2 text-end">
-        <button class="btn btn-sm btn-outline-secondary">
+        <button class="btn btn-sm btn-outline-secondary" (click)="onReset()">
           <i class="bi bi-arrow-clockwise"></i> Reset
         </button>
       </div>

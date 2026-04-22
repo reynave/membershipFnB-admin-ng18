@@ -1,0 +1,114 @@
+<div class="d-flex align-items-center justify-content-between mb-3 gap-3">
+  <div>
+    <h5 class="fw-bold mb-0"><i class="bi bi-megaphone-fill text-primary me-2"></i>Promos</h5>
+    <div class="text-muted small">Manage promotional info shown in the member app.</div>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">
+    <i class="bi bi-plus-circle me-1"></i>New Promo
+  </button>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body d-flex gap-2 align-items-center">
+    <input class="form-control" placeholder="Search promo name or description" [(ngModel)]="search" (keyup.enter)="onSearch()" />
+    <button class="btn btn-outline-secondary" (click)="onSearch()">
+      <i class="bi bi-search"></i>
+    </button>
+  </div>
+</div>
+
+<div *ngIf="loading" class="text-center py-5 text-muted"><span class="spinner-border"></span></div>
+
+<div *ngIf="!loading" class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="px-3 text-muted small">ID</th>
+          <th class="text-muted small">NAME</th>
+          <th class="text-muted small">MERCHANT SCOPE</th>
+          <th class="text-muted small" width="240">PERIOD</th>
+          <th class="text-muted small"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="promos.length === 0">
+          <td colspan="5" class="text-center text-muted py-4 small">No promo data.</td>
+        </tr>
+        <tr *ngFor="let p of promos">
+          <td class="px-3 text-muted small">#{{ p.id }}</td>
+          <td>
+            <div class="fw-medium">{{ p.name }}</div>
+            <div class="text-muted small">{{ p.description || '-' }}</div>
+          </td>
+          <td>
+            <span *ngIf="p.merchantScope === 'global'" class="badge text-bg-success">Global</span>
+            <span *ngIf="p.merchantScope !== 'global'" class="badge text-bg-info">{{ p.merchantCount }} Merchant(s)</span>
+          </td>
+          <td class="small text-muted">{{ p.startDate | date  }} - {{ p.endDate | date}}</td>
+          <td class="text-end pe-3">
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary" (click)="openEdit(p)"><i class="bi bi-pencil"></i></button>
+              <a class="btn btn-outline-primary" [routerLink]="['/promos', p.id]"><i class="bi bi-diagram-3"></i></a>
+              <button class="btn btn-outline-danger" (click)="remove(p)" [disabled]="deletingId === p.id">
+                <span *ngIf="deletingId !== p.id"><i class="bi bi-trash"></i></span>
+                <span *ngIf="deletingId === p.id" class="spinner-border spinner-border-sm"></span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <small class="text-muted">Total: {{ total }}</small>
+    <ngb-pagination [collectionSize]="total" [(page)]="page" [pageSize]="pageSize" [boundaryLinks]="true" [maxSize]="5" (pageChange)="onPageChange()"></ngb-pagination>
+  </div>
+</div>
+
+<div *ngIf="showForm" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0,0,0,0.45); z-index: 1050;">
+  <div class="card border-0 shadow" style="width: min(760px, 96vw);">
+    <div class="card-header bg-white d-flex align-items-center justify-content-between">
+      <div class="fw-medium">{{ editingId ? 'Edit Promo' : 'Create Promo' }}</div>
+      <button class="btn btn-sm btn-outline-secondary" (click)="closeForm()"><i class="bi bi-x"></i></button>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label small text-muted">Name</label>
+          <input class="form-control" [(ngModel)]="form.name" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted">Image URL</label>
+          <input class="form-control" [(ngModel)]="form.img" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted">Start Date</label>
+          <div class="input-group">
+            <input class="form-control" placeholder="yyyy-mm-dd" name="promoStartDate" ngbDatepicker #promoStartDateDp="ngbDatepicker" [(ngModel)]="form.startDate" />
+            <button class="btn btn-outline-secondary" type="button" (click)="promoStartDateDp.toggle()"><i class="bi bi-calendar3"></i></button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small text-muted">End Date</label>
+          <div class="input-group">
+            <input class="form-control" placeholder="yyyy-mm-dd" name="promoEndDate" ngbDatepicker #promoEndDateDp="ngbDatepicker" [minDate]="form.startDate || undefined" [(ngModel)]="form.endDate" />
+            <button class="btn btn-outline-secondary" type="button" (click)="promoEndDateDp.toggle()"><i class="bi bi-calendar3"></i></button>
+          </div>
+        </div>
+        <div class="col-12">
+          <label class="form-label small text-muted">Description</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="form.description"></textarea>
+        </div>
+      </div>
+      <div *ngIf="formError" class="alert alert-danger py-2 mt-3 mb-0 small">{{ formError }}</div>
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-end gap-2">
+      <button class="btn btn-outline-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+      <button class="btn btn-primary" (click)="save()" [disabled]="saving">
+        <span *ngIf="!saving">Save</span>
+        <span *ngIf="saving" class="spinner-border spinner-border-sm"></span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -14,7 +14,7 @@ import { environment } from '../../../../environments/environment';
 export class UserDetailPage implements OnInit {
   @Input() id!: string;
   history = history;
-
+environment = environment;
   user: any = null;
   tokens: any[] = [];
   merchants: any[] = [];

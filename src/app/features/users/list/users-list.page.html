@@ -11,8 +11,16 @@
       </ol>
     </nav>
   </div>
-  <span class="badge bg-light text-dark border fs-6">Total: {{ users.length }}</span>
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-sm btn-primary" (click)="openCreate()">
+      <i class="bi bi-plus-circle me-1"></i>New User
+    </button>
+    <span class="badge bg-light text-dark border fs-6">Total: {{ users.length }}</span>
+  </div>
 </div>
+
+<div *ngIf="formError" class="alert alert-danger py-2">{{ formError }}</div>
+<div *ngIf="successMsg" class="alert alert-success py-2">{{ successMsg }}</div>
 
 <!-- Table -->
 <div class="card border-0 shadow-sm mb-4">
@@ -27,7 +35,6 @@
             <th class="px-3 text-muted fw-medium" style="font-size: 12px;">ID</th>
             <th class="text-muted fw-medium" style="font-size: 12px;">NAME</th>
             <th class="text-muted fw-medium" style="font-size: 12px;">EMAIL</th>
-            <th class="text-muted fw-medium" style="font-size: 12px;">STATUS</th>
             <th class="text-muted fw-medium" style="font-size: 12px;">MERCHANT TOKEN</th>
             <th class="text-muted fw-medium" style="font-size: 12px;">REGISTERED</th>
             <th class="text-muted fw-medium" style="font-size: 12px;"></th>
@@ -47,24 +54,68 @@
             </td>
             <td class="small text-muted">{{ u.email }}</td>
             <td>
-              <span *ngIf="u.status === 1" class="badge bg-success-subtle text-success border border-success-subtle">
-                <i class="bi bi-check-circle-fill me-1"></i>Active
-              </span>
-            </td>
-            <td>
               <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
                 {{ u.tokenCount }} merchants
               </span>
             </td>
             <td class="small text-muted">{{ u.inputDate }}</td>
             <td>
-              <a [routerLink]="['/users', u.id]" class="btn btn-sm btn-outline-primary">
-                <i class="bi bi-eye me-1"></i>Detail
-              </a>
+              <div class="d-flex justify-content-end gap-1">
+                <button class="btn btn-sm btn-outline-secondary" (click)="openEdit(u)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <a [routerLink]="['/users', u.id]" class="btn btn-sm btn-outline-primary">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <button class="btn btn-sm btn-outline-danger" (click)="removeUser(u)" [disabled]="deletingId === u.id || !canDelete(u)" [title]="!canDelete(u) ? 'Cannot delete yourself or master user' : 'Delete user'">
+                  <span *ngIf="deletingId !== u.id"><i class="bi bi-trash"></i></span>
+                  <span *ngIf="deletingId === u.id" class="spinner-border spinner-border-sm"></span>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showForm" class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style="background: rgba(0, 0, 0, 0.45); z-index: 1050;">
+  <div class="card border-0 shadow" style="width: min(620px, 96vw);">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+      <div class="fw-medium">{{ editingUserId ? 'Edit User' : 'Create User' }}</div>
+      <button class="btn btn-sm btn-outline-secondary" (click)="closeForm()" [disabled]="submitting">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small text-muted">Name</label>
+          <input class="form-control" [(ngModel)]="form.name" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small text-muted">Email</label>
+          <input class="form-control" [(ngModel)]="form.email" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small text-muted">Password {{ editingUserId ? '(optional)' : '' }}</label>
+          <input type="password" class="form-control" [(ngModel)]="form.password" />
+        </div>
+        <div class="col-md-6"></div>
+        <div class="col-12">
+          <label class="form-label small text-muted">Note</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="form.note"></textarea>
+        </div>
+      </div>
+      <div *ngIf="formError" class="alert alert-danger py-2 mt-3 mb-0 small">{{ formError }}</div>
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-end gap-2">
+      <button class="btn btn-outline-secondary" (click)="closeForm()" [disabled]="submitting">Cancel</button>
+      <button class="btn btn-primary" (click)="saveUser()" [disabled]="submitting">
+        <span *ngIf="!submitting">Save</span>
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm"></span>
+      </button>
     </div>
   </div>
 </div>

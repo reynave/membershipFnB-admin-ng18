@@ -1,0 +1,109 @@
+<div *ngIf="loading" class="text-center py-5 text-muted"><span class="spinner-border"></span></div>
+
+<div *ngIf="!loading && promo">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <button class="btn btn-sm btn-outline-secondary" (click)="history.back()">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </button>
+    <div>
+      <h5 class="fw-bold mb-0"><i class="bi bi-megaphone-fill text-primary me-2"></i>Promo Detail</h5>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+          <li class="breadcrumb-item"><a routerLink="/promos" class="text-decoration-none">Promos</a></li>
+          <li class="breadcrumb-item active">{{ promo.name }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert alert-danger py-2">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="alert alert-success py-2">{{ successMsg }}</div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white fw-medium">Promo Header</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label small text-muted">Name</label>
+              <input class="form-control" [(ngModel)]="form.name" />
+            </div>
+            <div class="col-12">
+              <label class="form-label small text-muted">Image URL</label>
+              <div *ngIf="form.img">
+                <div class="border rounded mb-2 p-1 bg-light d-inline-flex align-items-center justify-content-center">
+                  <img [src]="form.img" alt="Promo preview" class="img-fluid rounded" style="max-height: 220px; object-fit: contain;" />
+                </div>
+              </div>
+              <div class="input-group">
+                <input class="form-control" [(ngModel)]="form.img" />
+                <label class="btn btn-outline-secondary mb-0" [class.disabled]="uploadingImage">
+                  <span *ngIf="!uploadingImage"><i class="bi bi-upload me-1"></i>Upload</span>
+                  <span *ngIf="uploadingImage" class="spinner-border spinner-border-sm"></span>
+                  <input type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" class="d-none" (change)="uploadImage($event)" [disabled]="uploadingImage" />
+                </label>
+              </div>
+              <div class="form-text">Upload jpg/png to fill this URL automatically.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Start Date</label>
+              <div class="input-group">
+                <input class="form-control" placeholder="yyyy-mm-dd" name="promoDetailStartDate" ngbDatepicker #promoDetailStartDateDp="ngbDatepicker" [(ngModel)]="form.startDate" />
+                <button class="btn btn-outline-secondary" type="button" (click)="promoDetailStartDateDp.toggle()"><i class="bi bi-calendar3"></i></button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">End Date</label>
+              <div class="input-group">
+                <input class="form-control" placeholder="yyyy-mm-dd" name="promoDetailEndDate" ngbDatepicker #promoDetailEndDateDp="ngbDatepicker" [minDate]="form.startDate || null" [(ngModel)]="form.endDate" />
+                <button class="btn btn-outline-secondary" type="button" (click)="promoDetailEndDateDp.toggle()"><i class="bi bi-calendar3"></i></button>
+              </div>
+            </div>
+            <div class="col-12">
+              <label class="form-label small text-muted">Description</label>
+              <textarea rows="3" class="form-control" [(ngModel)]="form.description"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-end">
+          <button class="btn btn-primary" (click)="saveHeader()" [disabled]="savingHeader">
+            <span *ngIf="!savingHeader"><i class="bi bi-save me-1"></i>Save Header</span>
+            <span *ngIf="savingHeader" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white fw-medium d-flex justify-content-between align-items-center">
+          <span>Merchant Scope</span>
+          <span *ngIf="selectedMerchantIds.length === 0" class="badge text-bg-success">Global</span>
+          <span *ngIf="selectedMerchantIds.length > 0" class="badge text-bg-info">Selected: {{ selectedMerchantIds.length }}</span>
+        </div>
+        <div class="card-body">
+          <p class="small text-muted mb-3">If no merchant is selected, this promo is global and shown for all merchants in the app.</p>
+          <div class="d-flex gap-2 mb-3">
+            <button class="btn btn-sm btn-outline-secondary" (click)="setGlobalScope()">Set Global</button>
+          </div>
+          <div class="border rounded p-2" style="max-height: 320px; overflow: auto;">
+            <div *ngIf="merchants.length === 0" class="text-muted small py-2">No active merchants.</div>
+            <label *ngFor="let merchant of merchants" class="d-flex align-items-center gap-2 py-2 border-bottom small">
+              <input type="checkbox" [checked]="isChecked(merchant.id)" (change)="toggleMerchant(merchant.id, $any($event.target).checked)" />
+              <span>#{{ merchant.id }} - {{ merchant.name }}</span>
+            </label>
+          </div>
+        </div>
+        <div class="card-footer bg-white d-flex justify-content-end">
+          <button class="btn btn-primary" (click)="saveMerchants()" [disabled]="savingMerchants">
+            <span *ngIf="!savingMerchants"><i class="bi bi-diagram-3 me-1"></i>Save Merchant Scope</span>
+            <span *ngIf="savingMerchants" class="spinner-border spinner-border-sm"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!loading && !promo" class="text-center py-5 text-muted">Promo not found.</div>

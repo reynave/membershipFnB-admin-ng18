@@ -1,0 +1,124 @@
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>Reports
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item text-muted">Admin</li>
+        <li class="breadcrumb-item active">Reports</li>
+      </ol>
+    </nav>
+  </div>
+  <span class="badge bg-light text-dark border fs-6">Server Rendered</span>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label small text-muted">Report</label>
+        <select class="form-select form-select-sm"
+                [(ngModel)]="selectedReportKey"
+                (change)="loadReport()"
+                [disabled]="loadingList">
+        
+          <option *ngFor="let report of reports" [value]="report.key">
+            {{ report.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <label class="form-label small text-muted">Search</label>
+        <input type="text" class="form-control form-control-sm"
+               placeholder="Name, email, phone"
+               [(ngModel)]="search"
+               (keyup.enter)="loadReport()">
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Tier</label>
+        <select class="form-select form-select-sm" [(ngModel)]="tierId">
+          <option value="">All Tiers</option>
+          <option value="1">Blue</option>
+          <option value="2">Silver</option>
+          <option value="3">Gold</option>
+          <option value="4">Platinum</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Start Date</label>
+        <div class="input-group input-group-sm">
+          <input class="form-control" ngbDatepicker #d1="ngbDatepicker"
+                 placeholder="yyyy-mm-dd" 
+                 [(ngModel)]="startDate"
+                 (ngModelChange)="onStartDateChange($event)"
+                 (dateSelect)="onStartDateChange($event)"
+                 (click)="d1.toggle()">
+          <button class="btn btn-outline-secondary" (click)="d1.toggle()" type="button">
+            <i class="bi bi-calendar"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-2">
+        <label class="form-label small text-muted">End Date</label>
+        <div class="input-group input-group-sm">
+            <ng-container *ngIf="startDate; else noMinDate">
+              <input class="form-control" ngbDatepicker #d2a="ngbDatepicker"
+                     placeholder="yyyy-mm-dd"
+                     [(ngModel)]="endDate"
+                     [minDate]="startDate"
+                     (ngModelChange)="onEndDateChange($event)"
+                     (dateSelect)="onEndDateChange($event)"
+                     (click)="d2a.toggle()">
+              <button class="btn btn-outline-secondary" (click)="d2a.toggle()" type="button">
+                <i class="bi bi-calendar"></i>
+              </button>
+            </ng-container>
+            <ng-template #noMinDate>
+              <input class="form-control" ngbDatepicker #d2b="ngbDatepicker"
+                     placeholder="yyyy-mm-dd"
+                     [(ngModel)]="endDate"
+                     (ngModelChange)="onEndDateChange($event)"
+                     (dateSelect)="onEndDateChange($event)"
+                     (click)="d2b.toggle()">
+              <button class="btn btn-outline-secondary" (click)="d2b.toggle()" type="button">
+                <i class="bi bi-calendar"></i>
+              </button>
+            </ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-sm btn-primary" (click)="loadReport()" [disabled]="loadingReport || !selectedReportKey">
+        <i class="bi bi-play-fill me-1"></i>Load Report
+      </button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="resetFilters()" [disabled]="loadingReport">
+        <i class="bi bi-arrow-clockwise me-1"></i>Reset Filters
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="errorMsg" class="alert alert-danger">
+  {{ errorMsg }}
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex align-items-center justify-content-between">
+    <span class="fw-semibold">Preview</span>
+    <span *ngIf="loadingReport" class="text-muted small">Loading...</span>
+  </div>
+  <div class="card-body p-0 bg-light-subtle">
+    <div *ngIf="!reportHtml && !loadingReport" class="p-4 text-muted text-center">
+      Pilih report lalu klik Load Report.
+    </div>
+
+    <div *ngIf="reportHtml" class="w-100 bg-white p-3 font-monospace"  
+    [innerHTML]="reportHtml" style="max-height: 500px; overflow-y: auto; zoom:0.9"></div>
+  </div>
+</div>

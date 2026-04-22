@@ -44,7 +44,12 @@ Task backend REST API Admin dipisahkan ke `server/AI-agent/todo-admin-server.md`
 | ✅ | T-022 | Integrasi API Transactions + Redemptions | Tabel transaksi/redeem dari API nyata | AI | DONE | Medium | - | Endpoint backend tersedia |
 | ✅ | T-024 | Integrasi API Tiers | Read master tier dari API | AI | DONE | Medium | - | Endpoint backend tersedia |
 | ✅ | T-027 | UI Bahasa Inggris | Ubah label/text UI admin dari Indonesia ke Inggris | AI | DONE | Medium | T-003..T-012 | Konsistensi UI selesai |
-| 🟨 | T-026 | QA Visual | Cek semua halaman responsif + edge state kosong | PAIR | IN_PROGRESS | Low | T-019, T-022, T-024 | Smoke test utama sudah jalan |
+| ✅ | T-028 | Vouchers List + CRUD Header | Halaman voucher list + create/update/delete (soft delete) untuk data header voucher | AI | DONE | High | T-002 | Delete pakai `presence=0`, build sukses |
+| ✅ | T-029 | Voucher Detail Merchant Scope | Halaman detail voucher untuk atur relasi `voucher_merchant`; kosong = voucher global | AI | DONE | High | T-028 | Save merchant scope via API detail |
+| ✅ | T-030 | Member Detail Voucher History | Tambah list riwayat redeem voucher (`members_voucher`) di halaman member detail | AI | DONE | Medium | T-005, T-029 | Ditampilkan di Member Detail |
+| ✅ | T-031 | Promo List + CRUD Header | Halaman promo list + create/update/delete (soft delete) untuk info promo di app | AI | DONE | High | T-002 | Build sukses |
+| ✅ | T-032 | Promo Detail Merchant Scope | Halaman detail promo untuk atur relasi `promo_merchant`; kosong = promo global | AI | DONE | High | T-031 | API + UI tervalidasi |
+| 🟨 | T-026 | QA Visual | Cek semua halaman responsif + edge state kosong, validasi report filter, error handling, datepicker, dan build fix | PAIR | IN_PROGRESS | Low | T-019, T-022, T-024 | Validasi report filter, error handling, datepicker, build fix Angular sukses |
 | ⬜ | T-025 | Dashboard KPI | Agregat: total member, point, redeem hari ini | PAIR | TODO | Low | T-019, T-022 | Fase berikutnya |
 
 ---
@@ -59,3 +64,8 @@ Task backend REST API Admin dipisahkan ke `server/AI-agent/todo-admin-server.md`
 | 2026-04-21 | T-012 | Tambah manajemen POS token (create/delete/copy) di User Detail | AI |
 | 2026-04-21 | T-027 | Standardisasi label Angular Admin ke bahasa Inggris | AI |
 | 2026-04-21 | - | Pisah board backend admin ke `server/AI-agent/todo-admin-server.md` | AI |
+| 2026-04-22 | T-028..T-030 | Tambah planning modul Voucher (header CRUD, merchant scope detail, history di member detail) | AI |
+| 2026-04-22 | T-028..T-030 | Implementasi modul Voucher frontend selesai + build Angular sukses | AI |
+| 2026-04-22 | T-026 | Validasi report filter, error handling, datepicker, build fix Angular sukses | AI |
+| 2026-04-22 | T-031..T-032 | Tambah planning modul Promo (header CRUD + merchant scope detail) | AI |
+| 2026-04-22 | T-031..T-032 | Implementasi modul Promo frontend selesai + build Angular sukses | AI |

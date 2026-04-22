@@ -17,6 +17,7 @@ export class MemberDetailPage implements OnInit {
   member: any = null;
   balance: any = { totalPointIn: 0, totalPointOut: 0, balance: 0 };
   pointHistory: any[] = [];
+  voucherHistory: any[] = [];
   loading = false;
 
   constructor(private http: HttpClient) {}
@@ -28,6 +29,7 @@ export class MemberDetailPage implements OnInit {
         this.member      = res.data.member;
         this.balance     = res.data.balance;
         this.pointHistory = res.data.history;
+        this.voucherHistory = res.data.voucherHistory || [];
         this.loading     = false;
       },
       error: () => { this.loading = false; }
