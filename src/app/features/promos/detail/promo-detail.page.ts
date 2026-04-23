@@ -1,3 +1,5 @@
+
+
 import { Component, Input, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
@@ -64,7 +66,10 @@ export class PromoDetailPage implements OnInit {
       }
     });
   }
-
+  handleBirthdayMemberChange(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.form.birthdayMember = checked ? 1 : 0;
+  }
   saveHeader(): void {
     const payload: any = {
       name: String(this.form.name || '').trim(),

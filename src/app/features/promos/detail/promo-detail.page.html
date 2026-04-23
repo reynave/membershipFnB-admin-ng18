@@ -64,6 +64,25 @@
               <label class="form-label small text-muted">Description</label>
               <textarea rows="3" class="form-control" [(ngModel)]="form.description"></textarea>
             </div>
+            <!-- Birthday Promo Fields -->
+            <div class="col-12">
+              <label class="form-label small text-muted">Birthday Promo</label>
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="birthdayMember" [(ngModel)]="form.birthdayMember" [ngModelOptions]="{standalone: true}" [checked]="form.birthdayMember == 1" (change)="handleBirthdayMemberChange($event)" />
+                <label class="form-check-label" for="birthdayMember">Tampilkan promo di app member saat ulang tahun</label>
+              </div>
+              <div class="row g-2 align-items-center mb-2">
+                <div class="col-auto">
+                  <label class="form-label small text-muted mb-0">Birthday After (hari +)</label>
+                  <input type="number" class="form-control" [(ngModel)]="form.birthdayAfter" [ngModelOptions]="{standalone: true}" placeholder="0" min="0" />
+                </div>
+                <div class="col-auto">
+                  <label class="form-label small text-muted mb-0">Birthday Before (hari -)</label>
+                  <input type="number" class="form-control" [(ngModel)]="form.birthdayBefore" [ngModelOptions]="{standalone: true}" placeholder="0" min="0" />
+                </div>
+              </div>
+              <div class="form-text">Field ini hanya info, tidak ada validasi di app member.</div>
+            </div>
           </div>
         </div>
         <div class="card-footer bg-white d-flex justify-content-end">

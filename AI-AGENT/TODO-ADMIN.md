@@ -69,3 +69,4 @@ Task backend REST API Admin dipisahkan ke `server/AI-agent/todo-admin-server.md`
 | 2026-04-22 | T-026 | Validasi report filter, error handling, datepicker, build fix Angular sukses | AI |
 | 2026-04-22 | T-031..T-032 | Tambah planning modul Promo (header CRUD + merchant scope detail) | AI |
 | 2026-04-22 | T-031..T-032 | Implementasi modul Promo frontend selesai + build Angular sukses | AI |
+| 2026-04-23 | T-026, T-031..T-032 | Added `birthdayMember`, `birthdayAfter`, `birthdayBefore` fields: UI inputs in promo detail, backend create/update support; fixed Angular template binding and removed stray code. `ng build` completed successfully (bundle warning). | AI |
