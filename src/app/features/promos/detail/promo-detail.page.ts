@@ -2,7 +2,7 @@
 
 import { Component, Input, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf, CommonModule  } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgbDatepickerModule, NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClient } from '@angular/common/http';
@@ -11,7 +11,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-promo-detail',
   standalone: true,
-  imports: [RouterLink, NgFor, NgIf, FormsModule, NgbDatepickerModule],
+  imports: [RouterLink, NgFor, NgIf,CommonModule , FormsModule, NgbDatepickerModule],
   templateUrl: './promo-detail.page.html'
 })
 export class PromoDetailPage implements OnInit {
@@ -29,13 +29,7 @@ export class PromoDetailPage implements OnInit {
   merchants: any[] = [];
   selectedMerchantIds: number[] = [];
 
-  form: any = {
-    name: '',
-    img: '',
-    description: '',
-    startDate: null,
-    endDate: null
-  };
+  form: any =  {};
 
   constructor(private http: HttpClient) {}
 
@@ -47,6 +41,7 @@ export class PromoDetailPage implements OnInit {
     this.loading = true;
     this.http.get<any>(`${environment.apiBaseUrl}/admin/promos/${this.id}`).subscribe({
       next: (res) => {
+        console.log(res);
         this.promo = res.data?.promo;
         this.merchants = res.data?.merchants || [];
         const selected = res.data?.selectedMerchants || [];
@@ -55,6 +50,10 @@ export class PromoDetailPage implements OnInit {
           name: this.promo?.name || '',
           img: this.promo?.img || '',
           description: this.promo?.description || '',
+          birthdayMember: this.promo?.birthdayMember || 0,
+          birthdayAfter: this.promo?.birthdayAfter || 0,
+          birthdayBefore: this.promo?.birthdayBefore || 0,
+
           startDate: this.toDateStruct(this.promo?.startDate),
           endDate: this.toDateStruct(this.promo?.endDate)
         };
@@ -76,7 +75,10 @@ export class PromoDetailPage implements OnInit {
       img: String(this.form.img || '').trim(),
       description: String(this.form.description || '').trim(),
       startDate: this.toApiDate(this.form.startDate),
-      endDate: this.toApiDate(this.form.endDate)
+      endDate: this.toApiDate(this.form.endDate),
+      birthdayMember: this.form.birthdayMember ? 1 : 0,
+      birthdayAfter: Number(this.form.birthdayAfter) || 0,
+      birthdayBefore: Number(this.form.birthdayBefore) || 0
     };
 
     if (!payload.name) {
