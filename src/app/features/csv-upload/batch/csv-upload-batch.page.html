@@ -1,0 +1,348 @@
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+  <div>
+    <h5 class="fw-bold mb-0">
+      <i class="bi bi-database-check text-primary me-2"></i>Staging batch #{{ batchId }}
+    </h5>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb mb-0 small">
+        <li class="breadcrumb-item"><a routerLink="/csv-upload" class="text-decoration-none">POS Import</a></li>
+        <li class="breadcrumb-item active">Batch #{{ batchId }}</li>
+      </ol>
+    </nav>
+  </div>
+  <div class="d-flex gap-2">
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="reloadAll()"
+            [disabled]="loadingBatch || loadingLines || loadingMembers">
+      <i class="bi bi-arrow-clockwise me-1"></i>Reload from DB
+    </button>
+    <a routerLink="/csv-upload" class="btn btn-sm btn-primary">
+      <i class="bi bi-cloud-upload me-1"></i>Upload another report
+    </a>
+  </div>
+</div>
+
+<div *ngIf="notFound" class="alert alert-warning d-flex align-items-start gap-2">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <div>
+    <div class="fw-semibold">Batch #{{ batchId }} was not found.</div>
+    <div class="small">
+      The staging batch may have been deleted or never existed.
+      <a routerLink="/csv-upload" class="alert-link">Go back to the upload page</a>.
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loadError && !notFound" class="alert alert-danger d-flex align-items-start gap-2">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <div>{{ loadError }}</div>
+</div>
+
+<!-- ===== Batch summary (import_batch) ===== -->
+<div class="card border-0 shadow-sm mb-3" *ngIf="!notFound">
+  <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <span class="fw-semibold">
+        <i class="bi bi-clipboard-data me-1"></i>Batch summary
+      </span>
+      <span *ngIf="batch" class="badge {{ statusClass(batch.status) }}">{{ batch.status }}</span>
+      <span *ngIf="batch" class="small text-muted text-truncate" style="max-width: 320px;">
+        <i class="bi bi-file-earmark-text me-1"></i>{{ batch.fileName }}
+      </span>
+      <span *ngIf="loadingBatch" class="spinner-border spinner-border-sm text-primary"></span>
+    </div>
+  </div>
+
+  <div class="card-body" *ngIf="batch">
+    <div class="row g-3">
+      <div class="col-lg-7">
+        <div class="row row-cols-2 row-cols-md-3 g-3 small">
+          <div>
+            <div class="text-muted">Outlet</div>
+            <div class="fw-semibold">{{ batch.outlet || '-' }}</div>
+          </div>
+          <div>
+            <div class="text-muted">Period</div>
+            <div class="fw-semibold">{{ batch.periodFrom || '-' }} &rarr; {{ batch.periodTo || '-' }}</div>
+          </div>
+          <div>
+            <div class="text-muted">Printed</div>
+            <div class="fw-semibold">{{ batch.printedAt || '-' }}</div>
+            <div class="text-muted" *ngIf="batch.printedBy">by {{ batch.printedBy }}</div>
+          </div>
+          <div>
+            <div class="text-muted">Uploaded</div>
+            <div class="fw-semibold">{{ batch.createdAt || '-' }}</div>
+            <div class="text-muted" *ngIf="batch.createdBy">by {{ batch.createdBy }}</div>
+          </div>
+          <div>
+            <div class="text-muted">Footer gross total</div>
+            <div class="fw-semibold">{{ batch.footerGross === null ? '-' : (batch.footerGross | number: '1.0-2') }}</div>
+          </div>
+          <div>
+            <div class="text-muted">Commit readiness</div>
+            <div class="fw-semibold" [class.text-success]="batch.canCommit" [class.text-danger]="!batch.canCommit">
+              {{ batch.canCommit ? 'Ready to commit' : 'Not ready (errors or already committed)' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="row row-cols-2 g-2">
+          <div class="col">
+            <div class="border rounded p-2">
+              <div class="text-muted small">Members</div>
+              <div class="fw-bold fs-5">{{ batch.totals?.members | number }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="border rounded p-2">
+              <div class="text-muted small">Checks</div>
+              <div class="fw-bold fs-5">{{ batch.totals?.checks | number }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="border rounded p-2">
+              <div class="text-muted small">Items</div>
+              <div class="fw-bold fs-5">{{ batch.totals?.items | number }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="border rounded p-2">
+              <div class="text-muted small">Issues</div>
+              <div class="fw-bold fs-5">
+                <span class="badge bg-danger me-1">{{ batch.errorCount }} E</span>
+                <span class="badge bg-warning text-dark">{{ batch.warningCount }} W</span>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="border rounded p-2">
+              <div class="text-muted small">Item sales</div>
+              <div class="fw-semibold">{{ batch.totals?.itemSales | number: '1.0-2' }}</div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="border rounded p-2">
+              <div class="text-muted small">Item total</div>
+              <div class="fw-semibold">{{ batch.totals?.itemTotal | number: '1.0-2' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="batch.footerComparison" class="alert alert-light border mt-3 mb-0 small">
+      <i class="bi bi-calculator me-1"></i>
+      Footer gross total <strong>{{ batch.footerComparison.reportGrossTotal === null ? '-' : (batch.footerComparison.reportGrossTotal | number: '1.0-2') }}</strong>
+      vs rows item total <strong>{{ batch.footerComparison.rowsItemTotal | number: '1.0-2' }}</strong>
+      &nbsp;|&nbsp; difference <strong>{{ batch.footerComparison.difference === null ? '-' : (batch.footerComparison.difference | number: '1.0-2') }}</strong>
+    </div>
+
+    <div *ngIf="batch.notices?.length" class="alert alert-warning mt-3 mb-0 small">
+      <div class="fw-semibold mb-1">
+        <i class="bi bi-info-circle me-1"></i>{{ batch.notices.length }} note(s) from the parser
+      </div>
+      <ul class="mb-0 ps-3">
+        <li *ngFor="let notice of batch.notices">{{ notice }}</li>
+      </ul>
+    </div>
+
+    <div *ngIf="batch.skippedChecks?.length" class="alert alert-info mt-3 mb-0 small">
+      <div class="fw-semibold mb-1"><i class="bi bi-slash-circle me-1"></i>Skipped validation</div>
+      <ul class="mb-0 ps-3">
+        <li *ngFor="let skipped of batch.skippedChecks">{{ skipped }}</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Staged rows (import_line / import_member) ===== -->
+<div class="card border-0 shadow-sm" *ngIf="!notFound">
+  <div class="card-header bg-white">
+    <ul class="nav nav-tabs card-header-tabs">
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)" [class.active]="activeTab === 'lines'" (click)="setTab('lines')">
+          <i class="bi bi-table me-1"></i>Item lines
+          <span class="badge bg-light text-dark border ms-1">{{ lineTotal | number }}</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="javascript:void(0)" [class.active]="activeTab === 'members'" (click)="setTab('members')">
+          <i class="bi bi-people me-1"></i>Members
+          <span class="badge bg-light text-dark border ms-1">{{ memberTotal | number }}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- Lines -->
+  <div class="card-body p-0" *ngIf="activeTab === 'lines'">
+    <div class="d-flex flex-wrap align-items-end gap-2 p-3 border-bottom">
+      <div>
+        <label class="form-label small text-muted mb-1">Severity</label>
+        <select class="form-select form-select-sm" [(ngModel)]="lineSeverity" (ngModelChange)="onLineFilterChange()">
+          <option value="">All</option>
+          <option value="ERROR">Error</option>
+          <option value="WARNING">Warning</option>
+          <option value="OK">OK</option>
+        </select>
+      </div>
+      <div class="flex-grow-1" style="min-width: 220px;">
+        <label class="form-label small text-muted mb-1">Search PLU, description, or member</label>
+        <input type="text" class="form-control form-control-sm" placeholder="e.g. 10023 / MILK"
+               [(ngModel)]="lineSearch" (keyup.enter)="onLineFilterChange()">
+      </div>
+      <button type="button" class="btn btn-sm btn-primary" (click)="onLineFilterChange()" [disabled]="loadingLines">
+        <i class="bi bi-search me-1"></i>Filter
+      </button>
+      <div class="d-flex align-items-center gap-1">
+        <label class="small text-muted mb-0">Rows</label>
+        <select class="form-select form-select-sm w-auto" [(ngModel)]="linePageSize" (ngModelChange)="onLineFilterChange()">
+          <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+        </select>
+      </div>
+      <span *ngIf="loadingLines" class="spinner-border spinner-border-sm text-primary mb-1"></span>
+    </div>
+
+    <div class="table-responsive" style="max-height: 560px; overflow: auto;">
+      <table class="table table-sm table-striped table-hover mb-0 small align-middle">
+        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+          <tr>
+            <th style="width: 70px;">Line</th>
+            <th>Member</th>
+            <th style="width: 90px;">Check</th>
+            <th>PLU</th>
+            <th>Description</th>
+            <th class="text-end">Price</th>
+            <th class="text-end">Qty</th>
+            <th class="text-end">Item sales</th>
+            <th class="text-end">Disc</th>
+            <th class="text-end">Item total</th>
+            <th style="width: 90px;">Severity</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let line of lines">
+            <td class="text-muted">{{ line.lineNo }}</td>
+            <td class="text-nowrap">
+              <div>{{ line.memberName || '-' }}</div>
+              <div class="text-muted" style="font-size: 11px;">{{ line.memberId }}</div>
+            </td>
+            <td class="text-nowrap">
+              {{ line.checkNo || '-' }}
+              <span *ngIf="line.checkSeq > 1" class="text-muted" style="font-size: 11px;">#{{ line.checkSeq }}</span>
+            </td>
+            <td class="text-nowrap">{{ line.plu || '-' }}</td>
+            <td>{{ line.description || '-' }}</td>
+            <td class="text-end">{{ line.price === null ? '-' : (line.price | number: '1.0-2') }}</td>
+            <td class="text-end">{{ line.qty === null ? '-' : (line.qty | number: '1.0-2') }}</td>
+            <td class="text-end">{{ line.itemSales === null ? '-' : (line.itemSales | number: '1.0-2') }}</td>
+            <td class="text-end">{{ line.itemDisc === null ? '-' : (line.itemDisc | number: '1.0-2') }}</td>
+            <td class="text-end">{{ line.itemTotal === null ? '-' : (line.itemTotal | number: '1.0-2') }}</td>
+            <td>
+              <span *ngIf="line.severity" class="badge {{ severityClass(line.severity) }}">{{ line.severity }}</span>
+              <span *ngIf="!line.severity" class="text-muted">-</span>
+            </td>
+            <td class="text-muted" [title]="line.message || ''">{{ line.message || '' }}</td>
+          </tr>
+          <tr *ngIf="!loadingLines && lines.length === 0">
+            <td colspan="12" class="text-center text-muted py-4">No staged lines match the filter.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <small class="text-muted">{{ lineTotal | number }} line(s) in staging</small>
+      <ngb-pagination [collectionSize]="lineTotal" [(page)]="linePage" [pageSize]="linePageSize"
+                      [maxSize]="5" [boundaryLinks]="true" size="sm" class="mb-0"
+                      (pageChange)="onLinePageChange()"></ngb-pagination>
+    </div>
+  </div>
+
+
+  <!-- Members -->
+  <div class="card-body p-0" *ngIf="activeTab === 'members'">
+    <div class="d-flex flex-wrap align-items-end gap-2 p-3 border-bottom">
+      <div>
+        <label class="form-label small text-muted mb-1">Severity</label>
+        <select class="form-select form-select-sm" [(ngModel)]="memberSeverity" (ngModelChange)="onMemberFilterChange()">
+          <option value="">All</option>
+          <option value="ERROR">Error</option>
+          <option value="WARNING">Warning</option>
+          <option value="OK">OK</option>
+        </select>
+      </div>
+      <div class="flex-grow-1" style="min-width: 220px;">
+        <label class="form-label small text-muted mb-1">Search member ID or name</label>
+        <input type="text" class="form-control form-control-sm" placeholder="e.g. 6281234 / BUDI"
+               [(ngModel)]="memberSearch" (keyup.enter)="onMemberFilterChange()">
+      </div>
+      <button type="button" class="btn btn-sm btn-primary" (click)="onMemberFilterChange()" [disabled]="loadingMembers">
+        <i class="bi bi-search me-1"></i>Filter
+      </button>
+      <div class="d-flex align-items-center gap-1">
+        <label class="small text-muted mb-0">Rows</label>
+        <select class="form-select form-select-sm w-auto" [(ngModel)]="memberPageSize" (ngModelChange)="onMemberFilterChange()">
+          <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+        </select>
+      </div>
+      <span *ngIf="loadingMembers" class="spinner-border spinner-border-sm text-primary mb-1"></span>
+    </div>
+
+    <div class="table-responsive" style="max-height: 560px; overflow: auto;">
+      <table class="table table-sm table-striped table-hover mb-0 small align-middle">
+        <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+          <tr>
+            <th style="width: 60px;">Start</th>
+            <th>Member</th>
+            <th class="text-end">Items (calc / footer)</th>
+            <th class="text-end">Checks (calc / footer)</th>
+            <th class="text-end">Item sales (calc / footer)</th>
+            <th class="text-end">Item total (calc / footer)</th>
+            <th style="width: 90px;">Severity</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let member of members">
+            <td class="text-muted">{{ member.startLineNo }}</td>
+            <td class="text-nowrap">
+              <div>{{ member.memberName || '-' }}</div>
+              <div class="text-muted" style="font-size: 11px;">{{ member.memberId }}</div>
+            </td>
+            <td class="text-end text-nowrap">
+              {{ member.computed.itemQty | number: '1.0-2' }} / {{ member.footer.itemQty | number: '1.0-2' }}
+            </td>
+            <td class="text-end text-nowrap">{{ member.computed.checkCount }} / {{ member.footer.checkCount }}</td>
+            <td class="text-end text-nowrap">
+              {{ member.computed.itemSales | number: '1.0-2' }} / {{ member.footer.itemSales | number: '1.0-2' }}
+            </td>
+            <td class="text-end text-nowrap">
+              {{ member.computed.itemTotal | number: '1.0-2' }} / {{ member.footer.itemTotal | number: '1.0-2' }}
+            </td>
+            <td>
+              <span *ngIf="member.severity" class="badge {{ severityClass(member.severity) }}">{{ member.severity }}</span>
+              <span *ngIf="!member.severity" class="text-muted">-</span>
+            </td>
+            <td class="text-muted" [title]="member.message || ''">{{ member.message || '' }}</td>
+          </tr>
+          <tr *ngIf="!loadingMembers && members.length === 0">
+            <td colspan="8" class="text-center text-muted py-4">No staged members match the filter.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <small class="text-muted">{{ memberTotal | number }} member(s) in staging</small>
+      <ngb-pagination [collectionSize]="memberTotal" [(page)]="memberPage" [pageSize]="memberPageSize"
+                      [maxSize]="5" [boundaryLinks]="true" size="sm" class="mb-0"
+                      (pageChange)="onMemberPageChange()"></ngb-pagination>
+    </div>
+  </div>
+</div>
+

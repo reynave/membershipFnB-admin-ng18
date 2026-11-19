@@ -71,11 +71,18 @@
           <span>Reports</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a routerLink="/csv-upload" routerLinkActive="bg-primary text-white"
+           class="nav-link text-white-50 px-3 py-2 rounded d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-spreadsheet"></i>
+          <span>POS Import</span>
+        </a>
+      </li>
     </ul>
 
     <!-- Footer -->
     <div class="px-3 py-2 border-top border-secondary">
-      <small class="text-secondary">v1.0.0 &bull; Admin Panel</small>
+      <small class="text-secondary">v{{ version }} &bull; Admin Panel</small>
     </div>
   </nav>
 

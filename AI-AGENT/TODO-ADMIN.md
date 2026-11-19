@@ -49,6 +49,7 @@ Task backend REST API Admin dipisahkan ke `server/AI-agent/todo-admin-server.md`
 | ✅ | T-030 | Member Detail Voucher History | Tambah list riwayat redeem voucher (`members_voucher`) di halaman member detail | AI | DONE | Medium | T-005, T-029 | Ditampilkan di Member Detail |
 | ✅ | T-031 | Promo List + CRUD Header | Halaman promo list + create/update/delete (soft delete) untuk info promo di app | AI | DONE | High | T-002 | Build sukses |
 | ✅ | T-032 | Promo Detail Merchant Scope | Halaman detail promo untuk atur relasi `promo_merchant`; kosong = promo global | AI | DONE | High | T-031 | API + UI tervalidasi |
+| ✅ | T-033 | CSV Upload Preview | Reusable component `app-csv-upload-preview` + halaman `/csv-upload`: pilih/drag-drop CSV, preview tabel + pagination, validasi, lalu upload ke REST API | AI | DONE | Medium | T-002 | Build sukses. Endpoint import backend belum ada, URL diisi manual di halaman |
 | 🟨 | T-026 | QA Visual | Cek semua halaman responsif + edge state kosong, validasi report filter, error handling, datepicker, dan build fix | PAIR | IN_PROGRESS | Low | T-019, T-022, T-024 | Validasi report filter, error handling, datepicker, build fix Angular sukses |
 | ⬜ | T-025 | Dashboard KPI | Agregat: total member, point, redeem hari ini | PAIR | TODO | Low | T-019, T-022 | Fase berikutnya |
 
@@ -70,3 +71,5 @@ Task backend REST API Admin dipisahkan ke `server/AI-agent/todo-admin-server.md`
 | 2026-04-22 | T-031..T-032 | Tambah planning modul Promo (header CRUD + merchant scope detail) | AI |
 | 2026-04-22 | T-031..T-032 | Implementasi modul Promo frontend selesai + build Angular sukses | AI |
 | 2026-04-23 | T-026, T-031..T-032 | Added `birthdayMember`, `birthdayAfter`, `birthdayBefore` fields: UI inputs in promo detail, backend create/update support; fixed Angular template binding and removed stray code. `ng build` completed successfully (bundle warning). | AI |
+| 2026-06-10 | T-033 | Added reusable CSV upload preview component (shared/components/csv-upload-preview) and /csv-upload page + sidebar menu. `ng build` succeeded. | AI |
+| 2026-11-19 | T-033 | POS import dipecah jadi 2 halaman: `/csv-upload` (upload report + tabel "Staging batches" dari `GET /member-sales`) dan `/csv-upload/:batchId` (Staging batch #ID dari `import_batch`/`import_line`/`import_member`). Upload sukses langsung redirect ke halaman batch. Endpoint baru `GET /api/admin/imports/member-sales` (list batch, filter status/search + paginasi). `ng build` sukses. | AI |

@@ -15,6 +15,8 @@ import { VoucherDetailPage } from './features/vouchers/detail/voucher-detail.pag
 import { PromosListPage } from './features/promos/list/promos-list.page';
 import { PromoDetailPage } from './features/promos/detail/promo-detail.page';
 import { ReportsPage } from './features/reports/reports.page';
+import { CsvUploadPage } from './features/csv-upload/csv-upload.page';
+import { CsvUploadBatchPage } from './features/csv-upload/batch/csv-upload-batch.page';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
@@ -39,6 +41,8 @@ export const routes: Routes = [
 			{ path: 'users', component: UsersListPage },
 			{ path: 'users/:id', component: UserDetailPage },
 			{ path: 'reports', component: ReportsPage },
+			{ path: 'csv-upload', component: CsvUploadPage },
+			{ path: 'csv-upload/:batchId', component: CsvUploadBatchPage },
 		]
 	},
 	{ path: '**', redirectTo: 'login' }

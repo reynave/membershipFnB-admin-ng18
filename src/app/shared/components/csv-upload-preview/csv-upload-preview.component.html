@@ -1,0 +1,124 @@
+<!-- Drop zone -->
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="border border-2 rounded p-4 text-center"
+         [class.border-primary]="dragOver"
+         [class.bg-primary-subtle]="dragOver"
+         [class.border-dashed]="!dragOver"
+         style="border-style: dashed !important;"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)">
+      <i class="bi bi-file-earmark-spreadsheet fs-1 text-primary"></i>
+      <div class="fw-semibold mt-2">Drag &amp; drop a CSV file here</div>
+      <div class="text-muted small mb-3">or choose a file (max {{ maxFileSizeMb }} MB, up to {{ maxRows }} rows)</div>
+      <input #fileInput type="file" accept=".csv,text/csv" class="form-control form-control-sm w-auto d-inline-block"
+             (change)="onFileInputChange($event)">
+    </div>
+
+    <div *ngIf="file" class="row g-3 align-items-end mt-1">
+      <div class="col-md-4">
+        <label class="form-label small text-muted">Delimiter</label>
+        <select class="form-select form-select-sm" [(ngModel)]="delimiter" (change)="onParseOptionChange()">
+          <option value="auto">Auto detect</option>
+          <option value=",">Comma (,)</option>
+          <option value=";">Semicolon (;)</option>
+          <option value="tab">Tab</option>
+          <option value="|">Pipe (|)</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="csvHasHeader"
+                 [(ngModel)]="hasHeader" (change)="onParseOptionChange()">
+          <label class="form-check-label small" for="csvHasHeader">First row is header</label>
+        </div>
+      </div>
+      <div class="col-md-4 text-md-end small text-muted">
+        <i class="bi bi-file-earmark-text me-1"></i>{{ file.name }}
+        ({{ (file.size / 1024) | number: '1.0-1' }} KB)
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Messages -->
+<div *ngIf="errors.length" class="alert alert-danger">
+  <div class="fw-semibold mb-1">Please fix the following before uploading:</div>
+  <ul class="mb-0 ps-3">
+    <li *ngFor="let e of errors">{{ e }}</li>
+  </ul>
+</div>
+
+<div *ngIf="warnings.length" class="alert alert-warning">
+  <ul class="mb-0 ps-3">
+    <li *ngFor="let w of warnings">{{ w }}</li>
+  </ul>
+</div>
+
+<div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+<div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+
+<div *ngIf="rows.length && !uploadUrl" class="alert alert-info">
+  Upload endpoint is not configured. You can preview the file, but uploading is disabled.
+</div>
+
+<!-- Preview -->
+<div class="card border-0 shadow-sm" *ngIf="rows.length">
+  <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>
+      <span class="fw-semibold">Preview</span>
+      <span class="badge bg-light text-dark border ms-2">{{ rows.length }} rows</span>
+      <span class="badge bg-light text-dark border ms-1">{{ headers.length }} columns</span>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="reset()" [disabled]="uploading">
+        <i class="bi bi-x-circle me-1"></i>Clear
+      </button>
+      <button type="button" class="btn btn-sm btn-primary" (click)="upload()" [disabled]="!canUpload">
+        <span *ngIf="uploading" class="spinner-border spinner-border-sm me-1"></span>
+        <i *ngIf="!uploading" class="bi bi-cloud-upload me-1"></i>Upload
+      </button>
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive" style="max-height: 500px; overflow: auto;">
+      <table class="table table-sm table-striped table-hover mb-0 small align-middle">
+        <thead class="table-light" style="position: sticky; top: 0;">
+          <tr>
+            <th class="text-muted" style="width: 60px;">#</th>
+            <th *ngFor="let h of headers" class="text-nowrap">{{ h }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of pagedRows; let i = index">
+            <td class="text-muted">{{ pageStartIndex + i + 1 }}</td>
+            <td *ngFor="let cell of row; let c = index"
+                [class.table-danger]="isCellInvalid(row, c)">
+              {{ cell }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <small class="text-muted">
+        Showing {{ pageStartIndex + 1 }} -
+        {{ pageStartIndex + pagedRows.length }} of {{ rows.length }}
+      </small>
+      <div class="d-flex align-items-center gap-1">
+        <label class="small text-muted mb-0" for="csvPageSize">Rows per page</label>
+        <select id="csvPageSize" class="form-select form-select-sm w-auto"
+                [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()">
+          <option *ngFor="let size of pageSizeOptions" [ngValue]="size">{{ size }}</option>
+        </select>
+      </div>
+    </div>
+    <ngb-pagination [collectionSize]="rows.length" [(page)]="page" [pageSize]="pageSize"
+                    [maxSize]="5" [boundaryLinks]="true" size="sm" class="mb-0"></ngb-pagination>
+  </div>
+</div>
