@@ -74,6 +74,10 @@ export class CsvUploadBatchPage implements OnInit {
       this.memberSeverity = '';
       this.memberSearch = '';
 
+      this.committing = false;
+      this.commitError = '';
+      this.commitResult = null;
+
       this.reloadAll();
     });
   }
@@ -159,6 +163,67 @@ export class CsvUploadBatchPage implements OnInit {
         this.members = [];
         this.memberTotal = 0;
         this.loadingMembers = false;
+      }
+    });
+  }
+
+  // ---- commit to transaction (import_member -> transaction) ---------------
+  committing = false;
+  commitError = '';
+  commitResult: any | null = null;
+
+  get canCommitToTransaction(): boolean {
+    return !!this.batch && this.batch.status === 'PREVIEW' && !this.committing;
+  }
+
+  /**
+   * POST /member-sales/:batchId/commit-transaction
+   * Setiap baris import_member menjadi satu baris transaction:
+   * bill = periode + '.' + check_no + '.' + import_member.id,
+   * totalAmount = ROUND(f_gross_total). Batch yang sudah COMMITTED tidak bisa
+   * di-commit ulang (server menjawab 409) dan hilang dari daftar staging.
+   */
+  commit(): void {
+    if (!this.batchId || this.committing) {
+      return;
+    }
+
+    if (!this.batch || this.batch.status !== 'PREVIEW') {
+      this.commitError = 'Only a PREVIEW batch can be committed to transaction.';
+      return;
+    }
+
+    if (this.batch.errorCount > 0) {
+      this.commitError =
+        `Batch #${this.batchId} still has ${this.batch.errorCount} error(s). Fix the report and upload it again.`;
+      return;
+    }
+
+    const memberCount = this.batch.totals?.members ?? 0;
+    const confirmed = window.confirm(
+      `Commit batch #${this.batchId} to transaction?\n\n` +
+        `${memberCount} member row(s) will be inserted into transaction ` +
+        '(bill = periode.check_no.import_member.id, totalAmount = gross total). ' +
+        'This cannot be undone and the batch will leave the staging list.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.committing = true;
+    this.commitError = '';
+    this.commitResult = null;
+
+    this.http.post<any>(`${this.importUrl}/${this.batchId}/commit-transaction`, {}).subscribe({
+      next: (res) => {
+        this.committing = false;
+        this.commitResult = res?.data || null;
+        this.loadBatch();
+      },
+      error: (err) => {
+        this.committing = false;
+        this.commitError = err?.error?.message || 'Failed to commit the batch to transaction.';
       }
     });
   }

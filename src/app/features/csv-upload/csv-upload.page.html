@@ -85,6 +85,11 @@
             You are redirected to <strong>Staging batch #ID</strong>, which renders the saved data
             (totals, item lines, members) straight from the database.
           </li>
+          <li class="mt-1">
+            <strong>Commit to Transaction</strong> writes one <code>transaction</code> row per member
+            (bill = <code>periode.check_no.import_member.id</code>, mis. <code>2026-01-01.00033.1</code>). Once committed
+            the batch leaves this staging list and cannot be committed again.
+          </li>
         </ol>
       </div>
     </div>
@@ -101,9 +106,8 @@
     </span>
     <div class="d-flex flex-wrap align-items-center gap-2">
       <select class="form-select form-select-sm w-auto" [(ngModel)]="batchStatus" (ngModelChange)="onBatchFilterChange()">
-        <option value="">All status</option>
+        <option value="">All staged status</option>
         <option value="PREVIEW">Preview</option>
-        <option value="COMMITTED">Committed</option>
       </select>
       <input type="text" class="form-control form-control-sm" style="width: 220px;"
              placeholder="Search file, outlet, uploader"
@@ -169,7 +173,7 @@
         </tr>
         <tr *ngIf="!loadingBatches && batches.length === 0">
           <td colspan="11" class="text-center text-muted py-4">
-            No batches in the staging tables yet. Upload a report to create the first one.
+            No staged batches left. Committed batches are hidden from this list &mdash; upload a report to create a new staging batch.
           </td>
         </tr>
       </tbody>

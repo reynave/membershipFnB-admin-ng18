@@ -18,7 +18,80 @@
     <a routerLink="/csv-upload" class="btn btn-sm btn-primary">
       <i class="bi bi-cloud-upload me-1"></i>Upload another report
     </a>
+    <button type="button" class="btn btn-sm btn-warning"
+            *ngIf="batch?.status === 'PREVIEW'"
+            (click)="commit()"
+            [disabled]="!canCommitToTransaction"
+            title="Satu baris import_member menjadi satu baris transaction">
+      <span *ngIf="committing" class="spinner-border spinner-border-sm me-1"></span>
+      <i *ngIf="!committing" class="bi bi-arrow-right-circle me-1"></i>Commit to Transaction
+    </button>
   </div>
+</div>
+
+<div *ngIf="batch?.status === 'COMMITTED' && !commitResult" class="alert alert-success d-flex align-items-start gap-2">
+  <i class="bi bi-check2-circle"></i>
+  <div>
+    <div class="fw-semibold">Batch #{{ batchId }} sudah di-commit ke transaction</div>
+    <div class="small">
+      Commit hanya bisa dilakukan sekali. Batch ini tidak lagi tampil di daftar
+      <a routerLink="/csv-upload" class="alert-link">Staging batches</a>.
+      <span *ngIf="batch.committedAt">Committed at {{ batch.committedAt }}.</span>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="commitError" class="alert alert-danger d-flex align-items-start gap-2">
+  <i class="bi bi-exclamation-triangle-fill"></i>
+  <div>
+    <div class="fw-semibold">Commit to transaction failed</div>
+    <div class="small">{{ commitError }}</div>
+  </div>
+</div>
+
+<div *ngIf="commitResult" class="alert alert-success">
+  <div class="fw-semibold">
+    <i class="bi bi-check2-circle me-1"></i>Committed to transaction
+  </div>
+  <div class="small">
+    {{ commitResult.transactionsInserted | number }} row(s) inserted &middot;
+    totalAmount {{ commitResult.totalAmount | number: '1.0-2' }} &middot;
+    billDate {{ commitResult.billDate }} &middot;
+    note {{ commitResult.note }}
+  </div>
+  <div class="small" *ngIf="commitResult.merchantId">
+    merchantId {{ commitResult.merchantId }}{{ commitResult.merchantMatched ? '' : ' (no master match)' }}
+  </div>
+  <div class="small">
+    Batch #{{ commitResult.batchId }} sekarang berstatus COMMITTED &mdash; hilang dari daftar
+    <a routerLink="/csv-upload" class="alert-link">Staging batches</a> dan tidak bisa di-commit ulang.
+  </div>
+  <div class="small mt-1">
+    Bill pattern: <code>{{ commitResult.billFormat }}</code>
+  </div>
+  <div class="table-responsive mt-2" *ngIf="commitResult.sampleBills?.length">
+    <table class="table table-sm table-bordered mb-0" style="max-width: 640px;">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 80px;">Member row</th>
+          <th>Member ID</th>
+          <th style="width: 90px;">Check #</th>
+          <th style="width: 160px;">Bill</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let sample of commitResult.sampleBills">
+          <td class="text-muted">{{ sample.id }}</td>
+          <td class="text-nowrap">{{ sample.memberId }}</td>
+          <td>{{ sample.checkNo || '-' }}</td>
+          <td class="fw-semibold">{{ sample.bill }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="small mb-0 mt-1" *ngIf="commitResult.warnings?.length">
+    <li *ngFor="let warning of commitResult.warnings">{{ warning }}</li>
+  </ul>
 </div>
 
 <div *ngIf="notFound" class="alert alert-warning d-flex align-items-start gap-2">
@@ -54,15 +127,13 @@
 
   <div class="card-body" *ngIf="batch">
     <div class="row g-3">
-      <div class="col-lg-7">
-        <div class="row row-cols-2 row-cols-md-3 g-3 small">
+      <div class="col-12">
+        <div class="row row-cols-5 g-3 small">
           <div>
-            <div class="text-muted">Outlet</div>
-            <div class="fw-semibold">{{ batch.outlet || '-' }}</div>
-          </div>
-          <div>
-            <div class="text-muted">Period</div>
-            <div class="fw-semibold">{{ batch.periodFrom || '-' }} &rarr; {{ batch.periodTo || '-' }}</div>
+            <div class="text-muted">Outlet / Period</div>
+         
+            <div class="fw-semibold">{{ batch.outlet || '-' }} </div>
+             <div class="text-small"> {{ batch.periodFrom || '-' }} &rarr; {{ batch.periodTo || '-' }}</div>
           </div>
           <div>
             <div class="text-muted">Printed</div>
@@ -87,28 +158,28 @@
         </div>
       </div>
 
-      <div class="col-lg-5">
-        <div class="row row-cols-2 g-2">
+      <div class="col-lg-12">
+        <div class="row row-cols-6 g-2">
           <div class="col">
-            <div class="border rounded p-2">
+            <div class="border rounded p-2 bg-light">
               <div class="text-muted small">Members</div>
               <div class="fw-bold fs-5">{{ batch.totals?.members | number }}</div>
             </div>
           </div>
           <div class="col">
-            <div class="border rounded p-2">
+            <div class="border rounded p-2 bg-light">
               <div class="text-muted small">Checks</div>
               <div class="fw-bold fs-5">{{ batch.totals?.checks | number }}</div>
             </div>
           </div>
           <div class="col">
-            <div class="border rounded p-2">
+            <div class="border rounded p-2 bg-light">
               <div class="text-muted small">Items</div>
               <div class="fw-bold fs-5">{{ batch.totals?.items | number }}</div>
             </div>
           </div>
           <div class="col">
-            <div class="border rounded p-2">
+            <div class="border rounded p-2 bg-light">
               <div class="text-muted small">Issues</div>
               <div class="fw-bold fs-5">
                 <span class="badge bg-danger me-1">{{ batch.errorCount }} E</span>
@@ -117,13 +188,13 @@
             </div>
           </div>
           <div class="col">
-            <div class="border rounded p-2">
+            <div class="border rounded p-2 bg-light">
               <div class="text-muted small">Item sales</div>
               <div class="fw-semibold">{{ batch.totals?.itemSales | number: '1.0-2' }}</div>
             </div>
           </div>
           <div class="col">
-            <div class="border rounded p-2">
+            <div class="border rounded p-2 bg-light">
               <div class="text-muted small">Item total</div>
               <div class="fw-semibold">{{ batch.totals?.itemTotal | number: '1.0-2' }}</div>
             </div>
@@ -299,10 +370,12 @@
           <tr>
             <th style="width: 60px;">Start</th>
             <th>Member</th>
-            <th class="text-end">Items (calc / footer)</th>
-            <th class="text-end">Checks (calc / footer)</th>
-            <th class="text-end">Item sales (calc / footer)</th>
-            <th class="text-end">Item total (calc / footer)</th>
+            <th style="width: 90px;">Check #</th>
+            <th class="text-end">Items</th>
+            <th class="text-end">Checks</th>
+            <th class="text-end">Item sales</th>
+            <th class="text-end">Item total</th>
+            <th class="text-end">Gross total</th>
             <th style="width: 90px;">Severity</th>
             <th>Message</th>
           </tr>
@@ -314,15 +387,21 @@
               <div>{{ member.memberName || '-' }}</div>
               <div class="text-muted" style="font-size: 11px;">{{ member.memberId }}</div>
             </td>
+            <td class="text-nowrap">{{ member.checkNo || '-' }}</td>
             <td class="text-end text-nowrap">
-              {{ member.computed.itemQty | number: '1.0-2' }} / {{ member.footer.itemQty | number: '1.0-2' }}
-            </td>
-            <td class="text-end text-nowrap">{{ member.computed.checkCount }} / {{ member.footer.checkCount }}</td>
-            <td class="text-end text-nowrap">
-              {{ member.computed.itemSales | number: '1.0-2' }} / {{ member.footer.itemSales | number: '1.0-2' }}
+              {{ member.footer?.itemQty === null || member.footer?.itemQty === undefined ? '-' : member.footer.itemQty }}
             </td>
             <td class="text-end text-nowrap">
-              {{ member.computed.itemTotal | number: '1.0-2' }} / {{ member.footer.itemTotal | number: '1.0-2' }}
+              {{ member.footer?.checkCount === null || member.footer?.checkCount === undefined ? '-' : member.footer.checkCount }}
+            </td>
+            <td class="text-end text-nowrap">
+              {{ member.footer?.itemSales === null || member.footer?.itemSales === undefined ? '-' : (member.footer.itemSales | number: '1.0-2') }}
+            </td>
+            <td class="text-end text-nowrap">
+              {{ member.footer?.itemTotal === null || member.footer?.itemTotal === undefined ? '-' : (member.footer.itemTotal | number: '1.0-2') }}
+            </td>
+            <td class="text-end text-nowrap">
+              {{ member.footer?.grossTotal === null || member.footer?.grossTotal === undefined ? '-' : (member.footer.grossTotal | number: '1.0-2') }}
             </td>
             <td>
               <span *ngIf="member.severity" class="badge {{ severityClass(member.severity) }}">{{ member.severity }}</span>
@@ -331,7 +410,7 @@
             <td class="text-muted" [title]="member.message || ''">{{ member.message || '' }}</td>
           </tr>
           <tr *ngIf="!loadingMembers && members.length === 0">
-            <td colspan="8" class="text-center text-muted py-4">No staged members match the filter.</td>
+            <td colspan="10" class="text-center text-muted py-4">No staged members match the filter.</td>
           </tr>
         </tbody>
       </table>
